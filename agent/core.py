@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain.agents import create_agent
 from agent.tools.calculator import calculate
+from agent.tools.search import ddg_search
 
 # Load environment variables from .env at the root
 load_dotenv()
@@ -14,7 +15,7 @@ llm = ChatGroq(
 )
 
 # Define tools
-tools = [calculate]
+tools = [calculate, ddg_search]
 
 # System prompt for the agent
 SYSTEM_PROMPT = """You are a helpful and intelligent AI assistant.
