@@ -4,7 +4,7 @@ def main():
     print("Multi-Tool AI Agent (Terminal Mode)")
     print("-----------------------------------")
 
-    question = input('Ask a basic math operation or google search:')
+    question = input('Ask a basic math operation, google search, or about your media library:')
     print(f"Asking: '{question}'")
 
     response = run_agent(question)

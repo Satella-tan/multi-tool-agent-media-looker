@@ -4,24 +4,29 @@ from langchain_groq import ChatGroq
 from langchain.agents import create_agent
 from agent.tools.calculator import calculate
 from agent.tools.search import ddg_search
+from agent.tools.media_looker import lookup_media, rebuild_index
 
 # Load environment variables from .env at the root
 load_dotenv()
 
-# Initialize the LLM
+# Use your preferred LLM, recommend qwen/qwen3-32b bc it returns JSON
 llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
+    model="qwen/qwen3-32b",
     temperature=0.0
 )
 
 # Define tools
-tools = [calculate, ddg_search]
+tools = [calculate, ddg_search, lookup_media, rebuild_index]
 
 # System prompt for the agent
 SYSTEM_PROMPT = """You are a helpful and intelligent AI assistant.
-You have access to a set of tools to help you answer questions.
-Always use the appropriate tool when needed to ensure accuracy, especially for calculations.
-If you use a tool, explain your reasoning and present the tool's result clearly.
+You have access to the following tools:
+- Use 'calculate' for any mathematical calculations or evaluations.
+- Use 'ddg_search' to search the web for external information, general knowledge, or news.
+- Use 'lookup_media' to search the user's local media library for books, manga, anime, and video files.
+- Use 'rebuild_index' to rescan and update the local media library cache.
+
+When a user asks if they have a book, anime, manga, movie, or series (e.g. 'Do I have ...'), always use the 'lookup_media' tool to check their local library.
 """
 
 agent_graph = create_agent(
