@@ -17,7 +17,7 @@ It is designed to run in your terminal (and easily extendable to a REST API) to 
 
 ## Deep Dive: Media Library Lookup (`media_looker.py`)
 
-The media library tool is the most complex component of the project. It allows you to search files stored locally on your machine using natural language (e.g., *"Do I have any studio ghibli movies?"* or *"Do I have 1984 by Orwell?"*) without doing slow, redundant filesystem scans every time.
+The media library tool is the unique component of the project. It allows you to search files stored locally on your machine using natural language (e.g., *"Do I have any studio ghibli movies?"* or *"Do I have 1984 by Orwell?"*) without doing slow, redundant filesystem scans every time.
 
 ### How It Works:
 * **JSON Caching:** On its first run (or when requested), it recursively scans your configured folders and writes a fast lookup cache to `data/media_index.json`. This index is automatically ignored by Git to protect your privacy and local paths.
@@ -35,7 +35,7 @@ Follow these steps to set up and run the project on your machine:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/multi-tool-ai-agent.git
+git clone https://github.com/Satella-tan/multi-tool-agent-media-looker.git
 cd multi-tool-ai-agent
 ```
 
