@@ -4,4 +4,6 @@
 .env.test.local
 .env.production.local
 *.md
+!README.md
+!.env.example
 data/media_index.json
