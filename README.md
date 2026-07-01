@@ -1,6 +1,6 @@
 # Multi-Tool AI Agent
 
-An autonomous conversational AI agent that selects and executes tools to evaluate math expressions, search the web, and scan/fuzzy-search your local media directories. Powered by LangChain, FastAPI, and Qwen-3 (via Groq).
+An autonomous conversational AI agent that selects and executes tools to evaluate math expressions, search the web, and scan & search your local media directories. Powered by LangChain, FastAPI, and Qwen-3 (via Groq).
 
 ---
 
