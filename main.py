@@ -1,15 +1,38 @@
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
 from agent.core import run_agent
 
-def main():
-    print("Multi-Tool AI Agent (Terminal Mode)")
-    print("-----------------------------------")
+app = FastAPI(title="Multi-Tool AI Agent API")
 
-    question = input('Ask a basic math operation, google search, or about your media library:')
-    print(f"Asking: '{question}'")
+# In-memory session store
+sessions: dict[str, list] = {}
 
-    response = run_agent(question)
-    print("\nAgent Response:")
-    print(response)
+class ChatRequest(BaseModel):
+    message: str
+    session_id: str = Field(default="default")
 
-if __name__ == "__main__":
-    main()
+class ChatResponse(BaseModel):
+    response: str
+    tools_used: list[str]
+    session_id: str
+
+@app.post("/chat", response_model=ChatResponse)
+def chat(request: ChatRequest):
+    if not request.message.strip():
+        raise HTTPException(status_code=400, detail="Message cannot be empty.")
+    if len(request.message) > 1000:
+        raise HTTPException(status_code=400, detail="Message too long (max 1000 characters).")
+
+    # Get or create session
+    history = sessions.get(request.session_id, [])
+
+
+    result = run_agent(request.message, history=history)
+
+    sessions[request.session_id] = result["messages"]
+
+    return ChatResponse(
+        response=result["response"],
+        tools_used=result["tools_used"],
+        session_id=request.session_id,
+    )

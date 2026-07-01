@@ -1,91 +1,72 @@
 # Multi-Tool AI Agent
 
-A conversational AI assistant built in Python that autonomously decides which tools to call based on user input. It uses Groq's high-speed API (powered by **Qwen 3 32B**) and LangChain/LangGraph for orchestration. 
-
-It is designed to run in your terminal (and easily extendable to a REST API) to help you perform mathematical calculations, search the web, and manage/query your local media library.
+An autonomous conversational AI agent that selects and executes tools to evaluate math expressions, search the web, and scan/fuzzy-search your local media directories. Powered by LangChain, FastAPI, and Qwen-3 (via Groq).
 
 ---
 
-## Key Features & Tools
-
-1. **Smart Calculator (`calculate`):** Safely parses and evaluates basic arithmetic operations (`+`, `-`, `*`, `/`) without using unsafe `eval()` functions.
-2. **Web Search (`ddg_search`):** Fetches the top 3 search results from DuckDuckGo for general knowledge, news, and real-time updates.
-3. **Local Media Search (`lookup_media`):** Fuzzy-searches your local media files (books, manga, anime, and shows).
-4. **Media Index Update (`rebuild_index`):** Rescans your directories to update the local cache when files change.
+## Features
+* **Math Evaluator:** Safely parses and solves basic operations (+, -, *, /) using native float operations.
+* **Web Search:** Queries DuckDuckGo for live info.
+* **Media Looker:** Normalizes filenames (strips group tags like `[Sokudo]`, qualities like `1080p`, etc.) and fuzzy-searches your books, manga, and anime files using `rapidfuzz` against a local JSON cache.
 
 ---
 
-## Deep Dive: Media Library Lookup (`media_looker.py`)
+## How to Install & Configure:
 
-The media library tool is the most complex component of the project. It allows you to search files stored locally on your machine using natural language (e.g., *"Do I have any studio ghibli movies?"* or *"Do I have 1984 by Orwell?"*) without doing slow, redundant filesystem scans every time.
-
-### How It Works:
-* **JSON Caching:** On its first run (or when requested), it recursively scans your configured folders and writes a fast lookup cache to `data/media_index.json`. This index is automatically ignored by Git to protect your privacy and local paths.
-* **Smart Filename Normalization:** Anime and media files often contain noisy tags (fansub groups like `[Sokudo]`, parentheses, quality/codec markers like `1080p BD AV1 x265`, and season/episode numbers like `S01E03`). The tool's normalization engine strips this noise out, transforming `[Sokudo] Amagi Brilliant Park - S00E01 [1080p BD AV1].mkv` into the clean query-friendly token `amagi brilliant park`.
-* **Fuzzy Match Engine:** Queries are normalized and compared against the index using `rapidfuzz`. This finds the closest match even if you make typos or search with incomplete titles.
-* **Supported Formats:**
-  * **Books / Manga:** `.pdf`, `.epub`, `.mobi`, `.cbz`
-  * **Videos / Anime:** `.mp4`, `.mkv`, `.avi`
-
----
-
-## Setup & First-Time Installation
-
-Follow these steps to set up and run the project on your machine:
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/yourusername/multi-tool-ai-agent.git
-cd multi-tool-ai-agent
-```
-
-### 2. Set Up a Virtual Environment
-Create and activate a Python virtual environment:
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# macOS / Linux
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 3. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-*(Note: If you don't have a `requirements.txt` yet, install core dependencies: `pip install langchain langchain-groq python-dotenv duckduckgo-search rapidfuzz`)*
-
-### 4. Configure Environment Variables (`.env`)
-The agent requires a `.env` file at the root directory to store your Groq API key and local media paths.
-
-1. Copy the example environment template:
+1. **Clone & setup venv:**
    ```bash
-   cp .env.example .env
+   git clone https://github.com/yourusername/multi-tool-ai-agent.git
+   cd multi-tool-ai-agent
+   python -m venv venv
+   # Windows:
+   venv\Scripts\activate
+   # macOS/Linux:
+   source venv/bin/activate
    ```
-2. Open the newly created `.env` file and configure it:
-   * **`GROQ_API_KEY`**: Obtain a free API key at [console.groq.com](https://console.groq.com/) and paste it here.
-   * **`MEDIA_DIRS`**: Provide a comma-separated list of absolute paths to the folders you want the agent to search.
-   
-   Example `.env` configuration:
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Configure environment:**
+   Create a `.env` file at the root:
    ```ini
-   GROQ_API_KEY=gsk_your_actual_key_here
+   GROQ_API_KEY=your_groq_api_key
    MEDIA_DIRS=C:\Users\Pc\Desktop\BOOKS,E:\ANDRES\Media
    ```
 
-### 5. Running the Agent
-Start the terminal test harness:
+---
+
+## How to Run:
+
+### Terminal Mode (Interactive Loop)
 ```bash
-python main.py
+python cli.py
 ```
+
+### REST API Server (FastAPI)
+```bash
+uvicorn main:app --reload
+```
+Once running, check out the interactive Swagger API documentation at: `http://127.0.0.1:8000/docs`
 
 ---
 
-## Example Prompts to Try
+## API Usage (Curl Example)
 
-* **Math:** `What is 340 * 1.16?` (Triggers `calculate`)
-* **Web Search:** `who won the last world cup?` (Triggers `ddg_search`)
-* **Local Media:** `Do I have 1984 by Orwell?` or `Do I have Amagi Brilliant Park?` (Triggers `lookup_media` using your local index)
-* **Update Library:** `Update my media library` (Triggers `rebuild_index` to rescan folders and overwrite the JSON cache)
-* **Multi-Step Chain:** `Search who won the last World Cup and calculate how many years ago that was` (Triggers search, then uses the calculator on the retrieved year)
+**Endpoint:** `POST /chat`
+```bash
+curl -X POST http://127.0.0.1:8000/chat \
+  -H "Content-Type: application/json" \
+  -d "{\"message\": \"Do I have angel next door?\", \"session_id\": \"my-session\"}"
+```
+
+**Response:**
+```json
+{
+  "response": "You have \"The Angel Next Door Spoils Me Rotten\" in your library, with 5 matching files found...",
+  "tools_used": ["lookup_media"],
+  "session_id": "my-session"
+}
+```

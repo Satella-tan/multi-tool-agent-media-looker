@@ -35,10 +35,34 @@ agent_graph = create_agent(
     system_prompt=SYSTEM_PROMPT
 )
 
-def run_agent(prompt: str) -> str:
+def run_agent(prompt: str, history: list = None) -> dict:
     """
-    Runs the agent with a given prompt and returns the final response string.
+    Runs the agent with a given prompt and optional conversation history.
+    Returns a dict containing:
+    - 'response': The final text reply from the agent.
+    - 'tools_used': A list of unique tool names called during the run.
+    - 'messages': The updated list of all conversation messages.
     """
-    inputs = {"messages": [{"role": "user", "content": prompt}]}
-    result = agent_graph.invoke(inputs)
-    return result["messages"][-1].content
+    messages = []
+    if history:
+        messages.extend(history)
+    messages.append({"role": "user", "content": prompt})
+
+    result = agent_graph.invoke({"messages": messages})
+
+    # Extract any tools called during the model run
+    tools_used = []
+    for msg in result["messages"]:
+        if hasattr(msg, "tool_calls") and msg.tool_calls:
+            for tc in msg.tool_calls:
+                tools_used.append(tc["name"])
+
+    # Unique tools list
+    tools_used = list(set(tools_used))
+    response_text = result["messages"][-1].content
+
+    return {
+        "response": response_text,
+        "tools_used": tools_used,
+        "messages": result["messages"]
+    }

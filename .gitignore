@@ -7,3 +7,4 @@
 !README.md
 !.env.example
 data/media_index.json
+tests/
